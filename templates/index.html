@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financial Calculator PRO</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div id="symbols" aria-hidden="true"></div>
+<header class="top">
+  <div class="brand">Financial Calculator PRO</div>
+  <nav>
+    <button class="btn ghost" id="learnBtn">📚 Learn</button>
+    <button class="btn ghost" id="askBtn">🤖 Ask Questions</button>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en" class="on">English</button><button data-lang="te">తెలుగు</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+<section id="home">
+  <h1>Financial Calculator</h1>
+  <p class="sub">Simple tools for smarter financial decisions</p>
+  <div class="cards">
+    <button class="card savings" data-open="savings"><span>💰</span><h3>Savings</h3><p>How long to reach your goal?</p></button>
+    <button class="card emi" data-open="emi"><span>💳</span><h3>EMI</h3><p>Monthly loan payments</p></button>
+    <button class="card gst" data-open="gst"><span>🧾</span><h3>GST</h3><p>Add or remove tax</p></button>
+    <button class="card percentage" data-open="percentage"><span>📊</span><h3>Percentage</h3><p>Find any percent quickly</p></button>
+  </div>
+</section>
+
+<section id="savings" class="calc savings" hidden>
+  <button class="back">← Back to Home</button><h2>💰 Savings Calculator</h2>
+  <div class="grid">
+    <form class="panel" data-api="savings">
+      <label>Monthly Income<input name="income" type="number" min="0" step="any" required></label>
+      <label>Monthly Expenses<input name="expenses" type="number" min="0" step="any" required></label>
+      <label>Goal Name<input name="goal_name" type="text" placeholder="e.g. Laptop"></label>
+      <label>Goal Price<input name="goal_price" type="number" min="0" step="any" required></label>
+      <div class="row"><label>Target Period (optional)<input name="target_period" type="number" min="0" step="any"></label>
+      <label>Unit<select name="target_unit"><option value="months">Months</option><option value="years">Years</option></select></label></div>
+      <button class="btn" type="submit">Calculate</button>
+    </form>
+    <div class="panel out"><div class="result"></div><div class="bar" hidden><i></i></div>
+      <canvas id="c-sav1"></canvas><canvas id="c-sav2"></canvas></div>
+  </div>
+</section>
+
+<section id="emi" class="calc emi" hidden>
+  <button class="back">← Back to Home</button><h2>💳 EMI Calculator</h2>
+  <div class="grid">
+    <form class="panel" data-api="emi">
+      <label>Loan Principal<input name="principal" type="number" min="0" step="any" required></label>
+      <label>Annual Interest Rate (%)<input name="rate" type="number" min="0" step="any" required></label>
+      <div class="row"><label>Tenure<input name="tenure" type="number" min="0" step="any" required></label>
+      <label>Unit<select name="tenure_unit"><option value="years">Years</option><option value="months">Months</option></select></label></div>
+      <label>EMIs Paid<input name="paid" type="number" min="0" step="1" value="0"></label>
+      <button class="btn" type="submit">Calculate</button>
+    </form>
+    <div class="panel out"><div class="result"></div><canvas id="c-emi1"></canvas><canvas id="c-emi2"></canvas></div>
+  </div>
+</section>
+
+<section id="gst" class="calc gst" hidden>
+  <button class="back">← Back to Home</button><h2>🧾 GST Calculator</h2>
+  <div class="grid">
+    <form class="panel" data-api="gst">
+      <label>Product Name (optional)<input name="product" type="text"></label>
+      <label>Price<input name="price" type="number" min="0" step="any" required></label>
+      <label>Tax Mode<select name="mode"><option value="exclusive">Exclusive (add GST)</option><option value="inclusive">Inclusive (remove GST)</option></select></label>
+      <label>GST %<input name="gst_rate" id="gstRate" type="number" min="0" step="any" value="18" required></label>
+      <div class="chips"><button type="button">5</button><button type="button">12</button><button type="button" class="on">18</button><button type="button">28</button></div>
+      <button class="btn" type="submit">Calculate</button>
+    </form>
+    <div class="panel out"><div class="result"></div><canvas id="c-gst"></canvas></div>
+  </div>
+</section>
+
+<section id="percentage" class="calc percentage" hidden>
+  <button class="back">← Back to Home</button><h2>📊 Percentage Calculator</h2>
+  <div class="grid">
+    <form class="panel" data-api="percentage">
+      <label>Total<input name="total" type="number" min="0" step="any" required></label>
+      <label>Percentage (%)<input name="percentage" type="number" min="0" step="any" required></label>
+      <button class="btn" type="submit">Calculate</button>
+    </form>
+    <div class="panel out"><div class="result"></div><canvas id="c-pct"></canvas></div>
+  </div>
+</section>
+</main>
+
+<div class="modal" id="learnModal" hidden><div class="dialog">
+  <button class="close" aria-label="Close">✕</button><h2>📚 Learn</h2><div id="learnBody"></div></div></div>
+<div class="modal" id="askModal" hidden><div class="dialog">
+  <button class="close" aria-label="Close">✕</button><h2>🤖 Ask Questions</h2>
+  <div id="chatLog" class="chatlog"></div>
+  <form id="chatForm" class="chatform"><input id="chatInput" type="text" placeholder="Ask about savings, EMI, GST, percentages…" required><button class="btn">Send</button></form>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/chart-colors.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/symbols.js') }}"></script>
+<script src="{{ url_for('static', filename='js/learn.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
