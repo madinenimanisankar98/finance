@@ -58,3 +58,6 @@ canvas{max-height:260px;margin-top:16px}
 .quote.in{animation:quoteIn .9s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes quoteIn{0%{opacity:0;transform:translateY(18px) scale(.96)}60%{opacity:1;transform:none;box-shadow:0 0 28px rgba(251,113,133,.45)}100%{opacity:1;transform:none;box-shadow:0 0 0 rgba(251,113,133,0)}}
 @media (prefers-reduced-motion:reduce){.quote.in{animation:none}}
+.hero{padding:2px 0 14px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.hero span{display:block;color:var(--muted);font-size:.85rem}
+.hero b{display:block;font-size:clamp(1.8rem,6vw,2.4rem);line-height:1.15;color:var(--acc);word-break:break-word}

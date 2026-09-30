@@ -16,25 +16,55 @@ $$('[data-open]').forEach(b => b.onclick = () => {
 });
 $$('.back').forEach(b => b.onclick = () => show('home'));
 
+const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const hero = (label, value) => `<div class="hero"><span>${label}</span><b>${value}</b></div>`;
+
+// Turn a month count into text.
+// With a target period: 12+ months -> years and months, under 12 -> months (days only if under a month).
+// Without a target period: always months and days, never years.
+function duration(totalMonths, hasTarget) {
+  let m = Math.floor(totalMonths), d = Math.round((totalMonths - m) * 30);
+  if (d >= 30) { m += 1; d = 0; }
+  if (hasTarget && m >= 12) {
+    const y = Math.floor(m / 12), rest = m % 12;
+    return plural(y, 'year') + (rest ? ' ' + plural(rest, 'month') : '');
+  }
+  const parts = [];
+  if (m) parts.push(plural(m, 'month'));
+  if (d && (!hasTarget || m === 0)) parts.push(plural(d, 'day'));
+  return parts.length ? parts.join(' ') : '0 days';
+}
+
 const renderers = {
   savings: r => {
-    let h = stat('Goal', r.goal_name) + stat('Available Savings / month', money(r.available)) +
-      stat('Estimated Time', `${r.years}y ${r.months_part}m ${r.days}d (${r.months.toFixed(1)} months)`);
-    if (r.comparison) h += stat('Needed / month for target', money(r.needed_per_month)) +
+    const has = r.target_months !== undefined, name = esc(r.goal_name);
+    let h = hero('Your goal', name) +
+      stat('Monthly income', money(r.income)) +
+      stat('Monthly expenses', money(r.expenses)) +
+      stat('Monthly savings', money(r.available)) +
+      stat(`${name} price`, money(r.goal_price)) +
+      stat('Savings rate', r.savings_rate.toFixed(1) + '% of income') +
+      stat(`Time needed for ${name}`, duration(r.months, has));
+    if (has) h += stat('Your target', duration(r.target_months, true)) +
+      stat('Needed per month for target', money(r.needed_per_month)) +
       `<span class="badge b-${r.comparison}">${r.comparison[0].toUpperCase() + r.comparison.slice(1)}</span>`;
     drawSavings(r);
     return h;
   },
   emi: r => { drawEmi(r);
-    return stat('Monthly EMI', money(r.emi)) + stat('Total Payable', money(r.total_payable)) +
-      stat('Total Interest', money(r.total_interest)) +
+    return hero('Loan amount', money(r.principal)) + stat('Monthly EMI', money(r.emi)) +
+      stat('Total payable', money(r.total_payable)) + stat('Total interest', money(r.total_interest)) +
       stat(`Remaining after ${r.paid} EMIs`, money(r.remaining_balance)); },
   gst: r => { drawGst(r);
-    return stat(r.product, r.mode) + stat('Base Price', money(r.base)) +
-      stat(`GST (${r.rate}%)`, money(r.gst)) + stat('Total', money(r.total)); },
+    const entered = r.mode === 'inclusive' ? r.total : r.base;
+    return hero(`${esc(r.product)} price (${r.mode})`, money(entered)) +
+      stat('Base price', money(r.base)) + stat(`GST (${r.rate}%)`, money(r.gst)) +
+      stat('Total', money(r.total)); },
   percentage: r => { drawPct(r);
-    return stat(`${r.percentage}% of ${r.total}`, r.value.toLocaleString('en-IN', {maximumFractionDigits: 4})) +
-      stat('Remaining', r.remaining.toLocaleString('en-IN', {maximumFractionDigits: 4})); }
+    const f = n => n.toLocaleString('en-IN', {maximumFractionDigits: 4});
+    return hero('Percentage of total', `${r.percentage}% of ${f(r.total)}`) +
+      stat('Value', f(r.value)) + stat('Remaining', f(r.remaining)); }
 };
 
 $$('form[data-api]').forEach(f => f.addEventListener('submit', async e => {
