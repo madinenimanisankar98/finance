@@ -9,7 +9,10 @@ function show(id) {
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 $$('[data-open]').forEach(b => b.onclick = () => {
-  show(b.dataset.open); Confetti.rain(3000); showQuote(b.dataset.open);
+  const r = b.getBoundingClientRect();            // measure before the card is hidden
+  show(b.dataset.open);
+  Confetti.burst(r.left + r.width / 2, r.top + r.height / 2, 3000);
+  showQuote(b.dataset.open);
 });
 $$('.back').forEach(b => b.onclick = () => show('home'));
 
