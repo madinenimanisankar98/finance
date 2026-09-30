@@ -33,6 +33,7 @@
 
 <section id="savings" class="calc savings" hidden>
   <button class="back">← Back to Home</button><h2>💰 Savings Calculator</h2>
+  <blockquote class="quote" aria-live="polite"></blockquote>
   <div class="grid">
     <form class="panel" data-api="savings">
       <label>Monthly Income<input name="income" type="number" min="0" step="any" required></label>
@@ -50,6 +51,7 @@
 
 <section id="emi" class="calc emi" hidden>
   <button class="back">← Back to Home</button><h2>💳 EMI Calculator</h2>
+  <blockquote class="quote" aria-live="polite"></blockquote>
   <div class="grid">
     <form class="panel" data-api="emi">
       <label>Loan Principal<input name="principal" type="number" min="0" step="any" required></label>
@@ -65,6 +67,7 @@
 
 <section id="gst" class="calc gst" hidden>
   <button class="back">← Back to Home</button><h2>🧾 GST Calculator</h2>
+  <blockquote class="quote" aria-live="polite"></blockquote>
   <div class="grid">
     <form class="panel" data-api="gst">
       <label>Product Name (optional)<input name="product" type="text"></label>
@@ -80,6 +83,7 @@
 
 <section id="percentage" class="calc percentage" hidden>
   <button class="back">← Back to Home</button><h2>📊 Percentage Calculator</h2>
+  <blockquote class="quote" aria-live="polite"></blockquote>
   <div class="grid">
     <form class="panel" data-api="percentage">
       <label>Total<input name="total" type="number" min="0" step="any" required></label>
@@ -103,6 +107,8 @@
 <script src="{{ url_for('static', filename='js/chart-colors.js') }}"></script>
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/symbols.js') }}"></script>
+<script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quotes.js') }}"></script>
 <script src="{{ url_for('static', filename='js/learn.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>

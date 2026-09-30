@@ -8,7 +8,9 @@ function show(id) {
   $$('main > section').forEach(s => s.hidden = s.id !== id);
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
-$$('[data-open]').forEach(b => b.onclick = () => show(b.dataset.open));
+$$('[data-open]').forEach(b => b.onclick = () => {
+  show(b.dataset.open); Confetti.rain(3000); showQuote(b.dataset.open);
+});
 $$('.back').forEach(b => b.onclick = () => show('home'));
 
 const renderers = {
@@ -40,6 +42,8 @@ $$('form[data-api]').forEach(f => f.addEventListener('submit', async e => {
   const data = await res.json();
   if (!res.ok) { out.innerHTML = `<p class="err">${data.error}</p>`; return; }
   out.innerHTML = renderers[api](data);
+  const r = f.querySelector('button[type=submit]').getBoundingClientRect();
+  Confetti.burst(r.left + r.width / 2, r.top + r.height / 2); showQuote(api);
   if (api === 'savings') {
     const bar = $('.bar', f.closest('.grid')); bar.hidden = false;
     requestAnimationFrame(() => $('i', bar).style.width = Math.min(data.savings_rate, 100) + '%');
@@ -63,6 +67,8 @@ $$('.lang button').forEach(b => b.onclick = () => {
   lang = b.dataset.lang;
   $$('.lang button').forEach(x => x.classList.toggle('on', x === b));
   document.documentElement.lang = lang;
+  const cur = $$('main > section').find(x => !x.hidden);
+  if (cur && cur.id !== 'home') showQuote(cur.id);
   if (!$('#learnModal').hidden) renderLearn(lang);
   $('#chatInput').placeholder = lang === 'te' ? 'పొదుపు, EMI, GST, శాతాల గురించి అడగండి…' : 'Ask about savings, EMI, GST, percentages…';
 });
