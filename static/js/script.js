@@ -36,6 +36,20 @@ function duration(totalMonths, hasTarget) {
   return parts.length ? parts.join(' ') : '0 days';
 }
 
+// Loan duration: 12+ months -> years and months; under a year -> months and days; under a month -> days.
+function loanDuration(n) {
+  let m = Math.floor(n), d = Math.round((n - m) * 30);
+  if (d >= 30) { m += 1; d = 0; }
+  if (m >= 12) {
+    const y = Math.floor(m / 12), rest = m % 12;
+    return plural(y, 'year') + (rest ? ' ' + plural(rest, 'month') : '');
+  }
+  const parts = [];
+  if (m) parts.push(plural(m, 'month'));
+  if (d) parts.push(plural(d, 'day'));
+  return parts.length ? parts.join(' ') : '0 days';
+}
+
 const renderers = {
   savings: r => {
     const has = r.target_months !== undefined, name = esc(r.goal_name);
@@ -53,9 +67,12 @@ const renderers = {
     return h;
   },
   emi: r => { drawEmi(r);
+    const left = r.remaining_months > 0.01 ? loanDuration(r.remaining_months) : 'Loan completed';
     return hero('Loan amount', money(r.principal)) + stat('Monthly EMI', money(r.emi)) +
+      stat('Time to complete the loan', loanDuration(r.months_exact)) +
       stat('Total payable', money(r.total_payable)) + stat('Total interest', money(r.total_interest)) +
-      stat(`Remaining after ${r.paid} EMIs`, money(r.remaining_balance)); },
+      stat(`Remaining after ${r.paid} EMIs`, money(r.remaining_balance)) +
+      stat('Time left', left); },
   gst: r => { drawGst(r);
     const entered = r.mode === 'inclusive' ? r.total : r.base;
     return hero(`${esc(r.product)} price (${r.mode})`, money(entered)) +
@@ -103,18 +120,26 @@ $$('.lang button').forEach(b => b.onclick = () => {
   const cur = $$('main > section').find(x => !x.hidden);
   if (cur && cur.id !== 'home') showQuote(cur.id);
   if (!$('#learnModal').hidden) renderLearn(lang);
-  $('#chatInput').placeholder = lang === 'te' ? 'పొదుపు, EMI, GST, శాతాల గురించి అడగండి…' : 'Ask about savings, EMI, GST, percentages…';
+  $('#chatInput').placeholder = lang === 'te' ? 'ఏదైనా అడగండి…' : 'Ask me anything…';
 });
 
 function addMsg(text, cls) {
   const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text;
   $('#chatLog').appendChild(d); d.scrollIntoView({block: 'end'});
+  return d;
 }
 $('#chatForm').onsubmit = async e => {
   e.preventDefault();
   const q = $('#chatInput').value.trim(); if (!q) return;
+  const btn = $('#chatForm button'); btn.disabled = true;
   addMsg(q, 'u'); $('#chatInput').value = '';
-  const res = await fetch('/api/ask-ai', {method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({question: q, lang})});
-  const d = await res.json(); addMsg(d.answer || d.error, 'a');
+  const wait = addMsg(lang === 'te' ? 'ఆలోచిస్తున్నాను…' : 'Thinking…', 'a');
+  try {
+    const res = await fetch('/api/ask-ai', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q, lang})});
+    const d = await res.json(); wait.textContent = d.answer || d.error;
+  } catch (err) {
+    wait.textContent = lang === 'te' ? 'నెట్‌వర్క్ సమస్య. మళ్ళీ ప్రయత్నించండి.' : 'Network problem. Please try again.';
+  }
+  btn.disabled = false; wait.scrollIntoView({block: 'end'});
 };

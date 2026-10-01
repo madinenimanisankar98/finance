@@ -1,3 +1,6 @@
+import math
+
+
 def _n(d, key, required=True):
     v = d.get(key)
     if v in (None, ""):
@@ -39,21 +42,30 @@ def savings(d):
 
 
 def emi(d):
-    p, rate, tenure = _n(d, "principal"), _n(d, "rate"), _n(d, "tenure")
-    if p <= 0 or tenure <= 0:
-        raise ValueError("Principal and tenure must be greater than zero")
-    n = max(1, int(round(tenure * 12 if d.get("tenure_unit", "years") == "years" else tenure)))
-    paid = min(int(_n(d, "paid", required=False) or 0), n)
+    """Loan duration from principal, annual rate and the monthly EMI the user pays."""
+    p, rate, e = _n(d, "principal"), _n(d, "rate"), _n(d, "emi")
+    if p <= 0 or e <= 0:
+        raise ValueError("Loan amount and monthly EMI must be greater than zero")
     r = rate / 12 / 100
-    e = p / n if r == 0 else p * r * (1 + r) ** n / ((1 + r) ** n - 1)
-    bal, sched = p, []
-    for _ in range(n):
-        bal = bal * (1 + r) - e
-        sched.append(max(bal, 0))
-    total = e * n
-    return {"emi": e, "total_payable": total, "total_interest": total - p, "principal": p,
-            "months": n, "paid": paid, "remaining_balance": p if paid == 0 else sched[paid - 1],
-            "schedule": sched}
+    if r > 0 and e <= p * r:
+        raise ValueError(f"Monthly EMI must be more than the first month's interest "
+                         f"({p * r:,.2f}), otherwise the loan never ends")
+    n_exact = p / e if r == 0 else -math.log(1 - p * r / e) / math.log(1 + r)
+    if n_exact > 1200:
+        raise ValueError("This loan would take more than 100 years. Increase the monthly EMI")
+    bal, sched, paid_total = p, [], 0.0
+    while bal > 0.005 and len(sched) < 1300:
+        due = bal * (1 + r)
+        pay = min(e, due)
+        paid_total += pay
+        bal = max(due - pay, 0.0) if due - pay > 0.005 else 0.0
+        sched.append(bal)
+    count = len(sched)
+    paid = min(int(_n(d, "paid", required=False) or 0), count)
+    return {"emi": e, "months_exact": n_exact, "months": count, "principal": p,
+            "total_payable": paid_total, "total_interest": paid_total - p,
+            "paid": paid, "remaining_balance": p if paid == 0 else sched[paid - 1],
+            "remaining_months": max(n_exact - paid, 0), "schedule": sched}
 
 
 def gst(d):

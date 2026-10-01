@@ -56,8 +56,7 @@
     <form class="panel" data-api="emi">
       <label>Loan Principal<input name="principal" type="number" min="0" step="any" required></label>
       <label>Annual Interest Rate (%)<input name="rate" type="number" min="0" step="any" required></label>
-      <div class="row"><label>Tenure<input name="tenure" type="number" min="0" step="any" required></label>
-      <label>Unit<select name="tenure_unit"><option value="years">Years</option><option value="months">Months</option></select></label></div>
+      <label>Monthly EMI (amount you pay each month)<input name="emi" type="number" min="0" step="any" required></label>
       <label>EMIs Paid<input name="paid" type="number" min="0" step="1" value="0"></label>
       <button class="btn" type="submit">Calculate</button>
     </form>
@@ -100,7 +99,7 @@
 <div class="modal" id="askModal" hidden><div class="dialog">
   <button class="close" aria-label="Close">✕</button><h2>🤖 Ask AI</h2>
   <div id="chatLog" class="chatlog"></div>
-  <form id="chatForm" class="chatform"><input id="chatInput" type="text" placeholder="Ask about savings, EMI, GST, percentages…" required><button class="btn">Send</button></form>
+  <form id="chatForm" class="chatform"><input id="chatInput" type="text" placeholder="Ask me anything…" required><button class="btn">Send</button></form>
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
